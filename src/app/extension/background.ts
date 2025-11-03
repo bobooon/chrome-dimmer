@@ -1,6 +1,6 @@
 import { defaultSettings } from './api.ts'
 
-async function updateTabs(settings: UmbraSettings, type: UmbraUpdateType = null) {
+async function updateTabs(settings: DimmerSettings, type: DimmerUpdateType = null) {
   if (type !== 'reset' && settings.website.hostname === '*')
     return
 
@@ -52,7 +52,7 @@ async function getSettings(tabId?: number) {
   return settings
 }
 
-async function saveSettings(newSettings: UmbraSettings) {
+async function saveSettings(newSettings: DimmerSettings) {
   if (newSettings.website.hostname === '*' || newSettings.website.mode === 'global')
     await chrome.storage.local.set({ _global: newSettings.global })
 

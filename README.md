@@ -1,4 +1,4 @@
-## Umbra for Chromium
+## Dimmer for Chromium
 
 Change the brightness and color temperature of websites using a customizable overlay.
 

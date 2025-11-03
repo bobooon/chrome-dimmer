@@ -1,5 +1,5 @@
 {
-  "name": "umbra",
+  "name": "dimmer",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -2,14 +2,9 @@ import messagesJson from '../../locales/en/messages.json'
 
 const overlay = { opacity: 0.5, blend: 'normal', color: '#000000' }
 
-export const defaultSettings: UmbraSettings = {
+export const defaultSettings: DimmerSettings = {
   global: { overlay },
-  website: {
-    hostname: '*',
-    mode: 'global',
-    on: false,
-    overlay,
-  },
+  website: { hostname: '*', mode: 'global', on: false, overlay },
 }
 
 const messages = messagesJson as { [key: string]: { message: string } }
@@ -34,7 +29,7 @@ chromeApi.getSettings = async () => {
   }
 }
 
-chromeApi.saveSettings = async (settings: UmbraSettings, reset = false) => {
+chromeApi.saveSettings = async (settings: DimmerSettings, reset = false) => {
   try {
     if (reset)
       await chrome.runtime.sendMessage({ type: 'resetSettings' })

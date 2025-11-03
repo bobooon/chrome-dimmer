@@ -1,10 +1,10 @@
 import chromeApi, { defaultSettings } from '../extension/api.ts'
 
-interface UmbraAction { type: string, value: any, dispatch?: (action: UmbraAction) => void }
+interface DimmerAction { type: string, value: any, dispatch?: (action: DimmerAction) => void }
 
-const handler: { [key: string]: (state: UmbraState, value: any) => void } = {}
+const handler: { [key: string]: (state: DimmerState, value: any) => void } = {}
 
-handler.loadSettings = async (state: UmbraState, value: UmbraSettings) => {
+handler.loadSettings = async (state: DimmerState, value: DimmerSettings) => {
   state.settings = { ...value }
 }
 
@@ -41,7 +41,7 @@ handler.resetAll = (state) => {
   state.settings = settings
 }
 
-export default function pageReducer(prevState: UmbraState, action: UmbraAction) {
+export default function pageReducer(prevState: DimmerState, action: DimmerAction) {
   const state = { ...prevState }
   if (handler[action.type])
     handler[action.type](state, action.value)

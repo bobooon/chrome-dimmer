@@ -15,7 +15,7 @@
   }
 
   async function load() {
-    let settings: UmbraSettings | null = null
+    let settings: DimmerSettings | null = null
 
     try {
       // Try to load the page from local storage first.
@@ -29,7 +29,7 @@
       update(settings)
   }
 
-  function update(settings: UmbraSettings, type: UmbraUpdateType = null) {
+  function update(settings: DimmerSettings, type: DimmerUpdateType = null) {
     if (!overlay)
       return
     if (!document.documentElement.contains(overlay))
