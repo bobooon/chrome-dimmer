@@ -5,23 +5,8 @@
   "description": {
     "message": "Change the brightness and color temperature of websites using a customizable overlay."
   },
-  "activateCommand": {
+  "toggleCommand": {
     "message": "Toggle the overlay"
-  },
-  "globalCommand": {
-    "message": "Toggle the global settings"
-  },
-  "shortcutAssigned": {
-    "message": "Assigned Keyboard Shortcut"
-  },
-  "shortcutUnassigned": {
-    "message": "Keyboard shortcut not assigned."
-  },
-  "shortcutHelp": {
-    "message": "Assign a keyboard shortcut to activate the extension for the current website."
-  },
-  "shortcutAssign": {
-    "message": "Assign"
   },
   "on": {
     "message": "Activate"
@@ -29,26 +14,20 @@
   "onHelp": {
     "message": "Turn on the overlay for the current website."
   },
-  "onDisabledHelp": {
-    "message": "Due to browser limitations, this website cannot support an overlay."
-  },
   "off": {
     "message": "Deactivate"
   },
   "offHelp": {
     "message": "Turn off the overlay for the current website."
   },
+  "offDisabledHelp": {
+    "message": "Due to browser limitations, this website does not support an overlay."
+  },
   "global": {
     "message": "Use global settings"
   },
   "globalHelp": {
     "message": "When enabled, the shared global settings are applied."
-  },
-  "opacity": {
-    "message": "Intensity"
-  },
-  "opacityHelp": {
-    "message": "Change the intensity of the overlay. Use the selector above to adjust how the overlay blends with the website."
   },
   "blend": {
     "message": "Blending Mode"
@@ -80,13 +59,28 @@
   "blendSaturation": {
     "message": "Saturation"
   },
+  "opacity": {
+    "message": "Intensity"
+  },
+  "opacityHelp": {
+    "message": "Change the intensity of the overlay. Use the selector above to adjust how the overlay blends with the website."
+  },
   "color": {
     "message": "Color"
   },
-  "resetWebsite": {
-    "message": "Reset website"
+  "advanced": {
+    "message": "Advanced"
   },
-  "resetWebsiteConfirm": {
+  "extensionDetails": {
+    "message": "Manage extension settings"
+  },
+  "extensionShortcuts": {
+    "message": "Keyboard shortcuts"
+  },
+  "resetUrl": {
+    "message": "Reset current website"
+  },
+  "resetUrlConfirm": {
     "message": "Are you sure you want to reset the settings for this website?"
   },
   "resetAll": {

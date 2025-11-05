@@ -1,63 +1,44 @@
-import { Box, Button, Callout, Flex, Grid, Select, Separator, Text } from '@radix-ui/themes'
-import { useEffect, useReducer, useState } from 'react'
+/// <reference types="vite/client" />
+
+import { Box, Button, DropdownMenu, Flex, Select, Separator } from '@radix-ui/themes'
+import { useEffect, useReducer } from 'react'
 import { HexColorPicker } from 'react-colorful'
-import Slider from '../../components/slider.tsx'
-import Switch from '../../components/switch.tsx'
-import Tooltip from '../../components/tooltip.tsx'
-import chromeApi, { defaultSettings } from '../extension/api.ts'
-import pageReducer from './page-handler.ts'
+import { api } from '../extension/api.ts'
+import { defaultSettings } from '../extension/settings.ts'
+import { pageReducer } from './reducer.ts'
+import { UiSlider, UiSwitch } from './ui.tsx'
 import './page.css'
 
 export default function Page() {
   const [state, dispatch] = useReducer(pageReducer, { settings: structuredClone(defaultSettings) })
-  const [shortcut, setShortcut] = useState('')
   const { settings } = state
-  const mode = settings[settings.website.mode]
-  const disabled = settings.website.hostname === '*'
+  const mode = settings[settings.url.mode]
+  const disabled = settings.url.hostname === '*'
 
   useEffect(() => {
-    (async () => {
-      dispatch({ type: 'loadSettings', value: await chromeApi.getSettings(), dispatch })
-      setShortcut(await chromeApi.getShortcut())
-    })()
+    (async () => dispatch({ type: 'getSettings', value: await api.getSettings() }))()
   }, [])
 
-  const onChange = (type: string, value: any) => {
-    dispatch({ type, value, dispatch })
+  const onReset = (all = false) => {
+    if (window.confirm(api.getMessage(all ? 'resetAllConfirm' : 'resetUrlConfirm')))
+      dispatch({ type: 'reset', value: all })
   }
-
-  let help = 'onDisabledHelp'
-  if (!disabled)
-    help = !settings.website.on ? 'onHelp' : 'offHelp'
 
   return (
     <Box p="5" width="400px">
-      <Callout.Root color={!shortcut ? 'orange' : 'gray'} mb="5">
-        <Callout.Text>
-          <Flex as="span" align="center" gap="4">
-            <Tooltip.Root content={chromeApi.getMessage('shortcutHelp')}>
-              <Button size="1" variant="surface" my="-2" onClick={chromeApi.openShortcuts}>
-                {!shortcut ? chromeApi.getMessage('shortcutAssign') : shortcut}
-              </Button>
-            </Tooltip.Root>
-            <Text>{chromeApi.getMessage(!shortcut ? 'shortcutUnassigned' : 'shortcutAssigned')}</Text>
-          </Flex>
-        </Callout.Text>
-      </Callout.Root>
-
       <Flex direction="column" gap="3">
-        <Switch
-          label={chromeApi.getMessage(!settings.website.on ? 'on' : 'off')}
-          tooltip={chromeApi.getMessage(help)}
-          checked={settings.website.on}
-          onCheckedChange={value => onChange('setOn', value)}
+        <UiSwitch
+          label={api.getMessage(!settings.url.on ? 'on' : 'off')}
+          tooltip={api.getMessage(disabled ? 'offDisabledHelp' : (settings.url.on ? 'onHelp' : 'offHelp'))}
+          checked={!disabled && settings.url.on}
+          onCheckedChange={value => dispatch({ type: 'setOn', value })}
           disabled={disabled}
         />
-        <Switch
-          label={chromeApi.getMessage('global')}
-          tooltip={chromeApi.getMessage('globalHelp')}
-          checked={settings.website.mode === 'global'}
-          onCheckedChange={value => onChange('setMode', value)}
+        <UiSwitch
+          label={api.getMessage('global')}
+          tooltip={api.getMessage('globalHelp')}
+          checked={!disabled && settings.url.mode === 'global'}
+          onCheckedChange={value => dispatch({ type: 'setMode', value })}
           disabled={disabled}
         />
 
@@ -68,65 +49,75 @@ export default function Page() {
         <Select.Root
           value={mode.overlay.blend}
           defaultValue={mode.overlay.blend}
-          onValueChange={value => onChange('setBlend', value)}
+          onValueChange={value => dispatch({ type: 'setBlend', value })}
         >
           <Select.Trigger />
           <Select.Content>
             <Select.Group>
-              <Select.Label>{chromeApi.getMessage('blend')}</Select.Label>
-              <Select.Item value="color-burn">{chromeApi.getMessage('blendColorBurn')}</Select.Item>
-              <Select.Item value="darken">{chromeApi.getMessage('blendDarken')}</Select.Item>
-              <Select.Item value="difference">{chromeApi.getMessage('blendDifference')}</Select.Item>
-              <Select.Item value="exclusion">{chromeApi.getMessage('blendExclusion')}</Select.Item>
-              <Select.Item value="hard-light">{chromeApi.getMessage('blendHardLight')}</Select.Item>
-              <Select.Item value="luminosity">{chromeApi.getMessage('blendLuminosity')}</Select.Item>
-              <Select.Item value="multiply">{chromeApi.getMessage('blendMultiply')}</Select.Item>
-              <Select.Item value="normal">{chromeApi.getMessage('blendNormal')}</Select.Item>
-              <Select.Item value="saturation">{chromeApi.getMessage('blendSaturation')}</Select.Item>
+              <Select.Label>{api.getMessage('blend')}</Select.Label>
+              <Select.Item value="color-burn">{api.getMessage('blendColorBurn')}</Select.Item>
+              <Select.Item value="darken">{api.getMessage('blendDarken')}</Select.Item>
+              <Select.Item value="difference">{api.getMessage('blendDifference')}</Select.Item>
+              <Select.Item value="exclusion">{api.getMessage('blendExclusion')}</Select.Item>
+              <Select.Item value="hard-light">{api.getMessage('blendHardLight')}</Select.Item>
+              <Select.Item value="luminosity">{api.getMessage('blendLuminosity')}</Select.Item>
+              <Select.Item value="multiply">{api.getMessage('blendMultiply')}</Select.Item>
+              <Select.Item value="normal">{api.getMessage('blendNormal')}</Select.Item>
+              <Select.Item value="saturation">{api.getMessage('blendSaturation')}</Select.Item>
             </Select.Group>
           </Select.Content>
         </Select.Root>
 
         <Box mb="2">
-          <Slider
-            label={chromeApi.getMessage('opacity')}
-            tooltip={chromeApi.getMessage('opacityHelp')}
+          <UiSlider
+            label={api.getMessage('opacity')}
+            tooltip={api.getMessage('opacityHelp')}
             step={1}
             min={0}
             max={100}
             unit="%"
             value={[Math.round(mode.overlay.opacity * 100)]}
             defaultValue={[Math.round(mode.overlay.opacity * 100)]}
-            onValueChange={value => onChange('setOpacity', value)}
+            onValueChange={value => dispatch({ type: 'setOpacity', value })}
           />
         </Box>
 
         <HexColorPicker
           className="color-picker"
           color={mode.overlay.color}
-          onChange={value => onChange('setColor', value)}
+          onChange={value => dispatch({ type: 'setColor', value })}
         />
 
         <Box my="3" mx="-5">
           <Separator size="4" />
         </Box>
 
-        <Grid columns="2" gap="3" my="-2">
-          <Button
-            variant="surface"
-            color="red"
-            onClick={() => window.confirm(chromeApi.getMessage('resetWebsiteConfirm')) && onChange('resetWebsite', {})}
-          >
-            {chromeApi.getMessage('resetWebsite')}
-          </Button>
-          <Button
-            variant="surface"
-            color="red"
-            onClick={() => window.confirm(chromeApi.getMessage('resetAllConfirm')) && onChange('resetAll', {})}
-          >
-            {chromeApi.getMessage('resetAll')}
-          </Button>
-        </Grid>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <Button variant="soft">
+              {api.getMessage('advanced')}
+              <DropdownMenu.TriggerIcon />
+            </Button>
+          </DropdownMenu.Trigger>
+
+          <DropdownMenu.Content>
+            <DropdownMenu.Item onClick={() => api.createTab(`chrome://extensions/?id=${chrome?.runtime?.id}`)}>
+              {api.getMessage('extensionDetails')}
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onClick={() => api.createTab('chrome://extensions/shortcuts')}>
+              {api.getMessage('extensionShortcuts')}
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Separator />
+
+            <DropdownMenu.Item color="red" onClick={() => onReset()}>
+              {api.getMessage('resetUrl')}
+            </DropdownMenu.Item>
+            <DropdownMenu.Item color="red" onClick={() => onReset(true)}>
+              {api.getMessage('resetAll')}
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </Flex>
     </Box>
   )

@@ -31,11 +31,8 @@
     "default_popup": "index.html"
   },
   "commands": {
-    "activate": {
-      "description": "__MSG_activateCommand__"
-    },
-    "global": {
-      "description": "__MSG_globalCommand__"
+    "toggle": {
+      "description": "__MSG_toggleCommand__"
     }
   }
 }

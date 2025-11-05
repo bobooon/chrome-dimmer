@@ -1,17 +1,12 @@
-import messagesJson from '../../locales/en/messages.json'
+import type { Settings } from './settings.ts'
+import json from '../../locales/en/messages.json' with { type: 'json' }
+import { defaultSettings } from './settings.ts'
 
-const overlay = { opacity: 0.5, blend: 'normal', color: '#000000' }
+const messages = json as { [key: string]: { message: string } }
 
-export const defaultSettings: DimmerSettings = {
-  global: { overlay },
-  website: { hostname: '*', mode: 'global', on: false, overlay },
-}
+export function api() {}
 
-const messages = messagesJson as { [key: string]: { message: string } }
-
-export default function chromeApi() {}
-
-chromeApi.getMessage = (key: string, substitutions?: string | string[]): string => {
+api.getMessage = (key: string, substitutions?: string | string[]): string => {
   try {
     return chrome.i18n.getMessage(key, substitutions)
   }
@@ -20,16 +15,16 @@ chromeApi.getMessage = (key: string, substitutions?: string | string[]): string 
   }
 }
 
-chromeApi.getSettings = async () => {
+api.getSettings = async () => {
   try {
-    return await chrome.runtime.sendMessage({ type: 'getSettings' })
+    return await chrome.runtime.sendMessage({ type: 'getSettings' }) as Settings
   }
   catch {
     return structuredClone(defaultSettings)
   }
 }
 
-chromeApi.saveSettings = async (settings: DimmerSettings, reset = false) => {
+api.saveSettings = async (settings: Settings, reset = false) => {
   try {
     if (reset)
       await chrome.runtime.sendMessage({ type: 'resetSettings' })
@@ -39,18 +34,11 @@ chromeApi.saveSettings = async (settings: DimmerSettings, reset = false) => {
   catch {}
 }
 
-chromeApi.getShortcut = async () => {
+api.createTab = (url: string) => {
   try {
-    return await chrome.runtime.sendMessage({ type: 'getShortcut' })
+    chrome.tabs.create({ url })
   }
   catch {
-    return ''
+    console.log(url)
   }
-}
-
-chromeApi.openShortcuts = () => {
-  try {
-    chrome.tabs.create({ url: 'chrome://extensions/shortcuts' })
-  }
-  catch {}
 }

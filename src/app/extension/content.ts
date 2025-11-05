@@ -1,8 +1,10 @@
-(function () {
-  let overlay: HTMLElement | null = document.querySelector('umbreon-overlay')
+import type { Settings } from './settings.ts';
 
-  async function create() {
-    overlay = document.createElement('umbreon-overlay') as HTMLElement
+(function () {
+  let overlay: HTMLElement | null = document.querySelector('dimmer-overlay')
+
+  function create() {
+    overlay = document.createElement('dimmer-overlay') as HTMLElement
     overlay.style.position = 'fixed'
     overlay.style.zIndex = '2147483647'
     overlay.style.inset = '0'
@@ -15,41 +17,31 @@
   }
 
   async function load() {
-    let settings: DimmerSettings | null = null
+    let settings: Settings
 
     try {
-      // Try to load the page from local storage first.
-      settings = JSON.parse(localStorage.getItem('umbreon-overlay') || '')
+      settings = JSON.parse(localStorage.getItem('dimmer-overlay') || '')
     }
-    catch {}
-
-    if (!settings)
+    catch {
       settings = await chrome.runtime.sendMessage({ type: 'getSettings' })
-    if (settings)
-      update(settings)
+    }
+
+    update(settings)
   }
 
-  function update(settings: DimmerSettings, type: DimmerUpdateType = null) {
-    if (!overlay)
-      return
-    if (!document.documentElement.contains(overlay))
+  function update(settings: Settings) {
+    if (!overlay || !document.documentElement.contains(overlay))
       create()
 
-    const mode = settings[settings.website.mode]
+    const mode = settings[settings.url.mode]
 
-    if (type === 'activated')
-      overlay.style.transitionProperty = 'none'
-
-    overlay.style.transitionDuration = '0.15s'
-    overlay.style.transitionTimingFunction = 'ease'
-    overlay.style.visibility = settings.website.on ? 'visible' : 'hidden'
-    overlay.style.opacity = settings.website.on ? String(mode.overlay.opacity) : '0'
-    overlay.style.backgroundColor = mode.overlay.color
-    overlay.style.mixBlendMode = mode.overlay.blend
-
-    setTimeout(() => {
-      overlay!.style.transitionProperty = 'visibility, opacity'
-    }, 200)
+    overlay!.style.transitionProperty = 'visibility, opacity'
+    overlay!.style.transitionDuration = '0.15s'
+    overlay!.style.transitionTimingFunction = 'ease'
+    overlay!.style.visibility = settings.url.on ? 'visible' : 'hidden'
+    overlay!.style.opacity = settings.url.on ? String(mode.overlay.opacity) : '0'
+    overlay!.style.backgroundColor = mode.overlay.color
+    overlay!.style.mixBlendMode = mode.overlay.blend
   }
 
   create()
@@ -57,8 +49,8 @@
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message.action === 'update') {
-      localStorage.setItem('umbreon-overlay', JSON.stringify(message.payload.settings))
-      update(message.payload.settings, message.payload.type)
+      localStorage.setItem('dimmer-overlay', JSON.stringify(message.payload.settings))
+      update(message.payload.settings)
     }
   })
 })()

@@ -1,72 +1,51 @@
-import { defaultSettings } from './api.ts'
+import type { Settings } from './settings.ts'
+import { defaultSettings } from './settings.ts'
 
-async function updateTabs(settings: DimmerSettings, type: DimmerUpdateType = null) {
-  if (type !== 'reset' && settings.website.hostname === '*')
-    return
+async function updateTabs(tabId?: number) {
+  try {
+    const tabs = tabId
+      ? [await chrome.tabs.get(tabId)]
+      : (await chrome.tabs.query({ active: true }))
 
-  const tabs = await chrome.tabs.query({ url: `*://${settings.website.hostname}/*` })
-  if (!tabs)
-    return
-
-  await Promise.all(tabs.map(async (tab) => {
-    try {
-      if (!tab.id)
-        return
-
-      await chrome.tabs.sendMessage(tab.id, { action: 'update', payload: { settings, type } })
-    }
-    catch {}
-  }))
+    await Promise.allSettled(
+      tabs.map(async tab => await chrome.tabs.sendMessage(tab.id!, {
+        action: 'update',
+        payload: { settings: await getSettings(tab.id) },
+      })),
+    )
+  }
+  catch {}
 }
 
 async function getSettings(tabId?: number) {
-  let tab: chrome.tabs.Tab | undefined
-  if (tabId)
-    tab = await chrome.tabs.get(tabId)
-  else
-    tab = (await chrome.tabs.query({ currentWindow: true, active: true })).pop()
-
   const settings = structuredClone(defaultSettings)
-  const globalSettings = await chrome.storage.local.get(['_global'])
-  if (globalSettings._global)
-    settings.global = globalSettings._global
-
-  // Check whether the tab can run content scripts.
-  if (!tab?.id || !tab.url)
-    return settings
+  settings.global = (await chrome.storage.local.get(['_global']))._global || settings.global
 
   try {
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => true })
-  }
-  catch {
-    return settings
-  }
+    const tab = tabId
+      ? (await chrome.tabs.get(tabId))
+      : (await chrome.tabs.query({ currentWindow: true, active: true })).pop()
 
-  const { hostname } = new URL(tab.url)
-  settings.website.hostname = hostname
-
-  const websiteSettings = await chrome.storage.local.get([hostname])
-  if (websiteSettings[hostname])
-    settings.website = websiteSettings[hostname]
+    if (tab?.id && tab?.url) {
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => true })
+      const { hostname } = new URL(tab.url)
+      settings.url.hostname = hostname
+      settings.url = (await chrome.storage.local.get([hostname]))[hostname] || settings.url
+    }
+  }
+  catch {}
 
   return settings
 }
 
-async function saveSettings(newSettings: DimmerSettings) {
-  if (newSettings.website.hostname === '*' || newSettings.website.mode === 'global')
+async function saveSettings(newSettings: Settings) {
+  if (newSettings.url.hostname === '*' || newSettings.url.mode === 'global')
     await chrome.storage.local.set({ _global: newSettings.global })
-
-  // Do not save website page for tabs that cannot run content scripts.
-  if (newSettings.website.hostname === '*')
+  if (newSettings.url.hostname === '*')
     return
 
-  const settings = await getSettings()
-  await chrome.storage.local.set({ [settings.website.hostname]: newSettings.website })
-  await updateTabs(newSettings)
-}
-
-async function getShortcut() {
-  return (await chrome.commands.getAll())[1].shortcut
+  await chrome.storage.local.set({ [newSettings.url.hostname]: newSettings.url })
+  await updateTabs()
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, response) => {
@@ -77,44 +56,31 @@ chrome.runtime.onMessage.addListener((message, _sender, response) => {
 
     case 'saveSettings':
       saveSettings(message.payload)
-      break
+      return false
 
     case 'resetSettings':
-      chrome.storage.local.clear().then(() => updateTabs(defaultSettings, 'reset'))
-      break
-
-    case 'getShortcut':
-      getShortcut().then(shortcut => response(shortcut))
-      return true
+      chrome.storage.local.clear().then(() => updateTabs())
+      return false
   }
-
-  return false
 })
 
-// Watch for the toggle command to be activated.
-chrome.commands.onCommand.addListener(async (command) => {
-  const settings = await getSettings()
-
-  switch (command) {
-    case 'activate':
-      settings.website.on = !settings.website.on
-      break
-
-    case 'global':
-      settings.website.mode = settings.website.mode === 'global' ? 'website' : 'global'
-      break
-  }
-
-  await saveSettings(settings)
-})
-
-// Watch for changes in tabs.
+// Watch for URL change in tabs.
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
   if (changeInfo.status === 'complete')
-    await updateTabs(await getSettings(tabId))
+    await updateTabs(tabId)
 })
 
+// Watch for tab activation.
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   if (activeInfo.tabId)
-    await updateTabs(await getSettings(activeInfo.tabId), 'activated')
+    await updateTabs(activeInfo.tabId)
+})
+
+// Watch for toggle command shortcut.
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command === 'toggle') {
+    const settings = await getSettings()
+    settings.url.on = !settings.url.on
+    await saveSettings(settings)
+  }
 })

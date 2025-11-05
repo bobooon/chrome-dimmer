@@ -22,6 +22,7 @@ export default defineConfig({
         api: './src/app/extension/api.ts',
         background: './src/app/extension/background.ts',
         content: './src/app/extension/content.ts',
+        settings: './src/app/extension/settings.ts',
       },
       output: {
         entryFileNames: 'assets/[name].js',
