@@ -37,8 +37,8 @@ export default function Page() {
     <Box p="5" width="400px">
       <Flex direction="column" gap="3">
         <UiSwitch
-          label={api.getMessage(!settings.url.on ? 'on' : 'off')}
-          tooltip={api.getMessage('activateHelp')}
+          label={api.getMessage('toggle')}
+          tooltip={api.getMessage('toggleHelp')}
           checked={settings.url.on}
           onCheckedChange={value => dispatch({ type: 'setOn', value })}
         />
@@ -109,7 +109,7 @@ export default function Page() {
 
           <DropdownMenu.Content>
             <DropdownMenu.Item onClick={() => api.createTab(`chrome://extensions/?id=${chrome?.runtime?.id}`)}>
-              {api.getMessage('extensionDetails')}
+              {api.getMessage('extensionInfo')}
             </DropdownMenu.Item>
             <DropdownMenu.Item onClick={() => api.createTab('chrome://extensions/shortcuts')}>
               {api.getMessage('extensionShortcuts')}

@@ -13,8 +13,8 @@ export function UiSwitch(props: UiSwitchProps) {
   return (
     <Flex asChild align="center" gap="2" width="100%">
       <Text as="label" size="2">
-        {tooltip && <UiTooltip.Info content={tooltip} />}
-        <Text weight="medium" style={{ flexGrow: 1 }}>
+        {tooltip && <UiTooltip content={tooltip} />}
+        <Text style={{ flexGrow: 1 }}>
           {label}
         </Text>
         <Switch size="2" {...restProps} />
@@ -35,7 +35,7 @@ export function UiSlider(props: UiSliderProps) {
   return (
     <Box>
       <Flex align="center" gap="2" mb="2">
-        {tooltip && <UiTooltip.Info content={tooltip} />}
+        {tooltip && <UiTooltip content={tooltip} />}
         <Text size="2" style={{ flexGrow: 1 }}>
           {label}
         </Text>
@@ -51,18 +51,12 @@ export function UiSlider(props: UiSliderProps) {
   )
 }
 
-export function UiTooltip() {}
-
-UiTooltip.Root = (props: TooltipProps) => {
-  const { children, ...restProps } = props
-
-  return <Tooltip {...restProps}>{children}</Tooltip>
+export function UiTooltip(props: TooltipProps) {
+  return (
+    <Tooltip {...props}>
+      <IconButton asChild variant="ghost" color="gray" size="1" radius="full" style={{ opacity: 0.6 }} tabIndex={0}>
+        <Info size={16} />
+      </IconButton>
+    </Tooltip>
+  )
 }
-
-UiTooltip.Info = (props: TooltipProps) => (
-  <Tooltip {...props}>
-    <IconButton asChild variant="ghost" color="gray" size="1" radius="full" style={{ opacity: 0.6 }} tabIndex={0}>
-      <Info size={16} />
-    </IconButton>
-  </Tooltip>
-)

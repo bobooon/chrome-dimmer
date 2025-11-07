@@ -11,13 +11,10 @@
   "disabledHelp": {
     "message": "Due to browser limitations, this tab or website does not support an overlay."
   },
-  "on": {
+  "toggle": {
     "message": "Activate"
   },
-  "off": {
-    "message": "Deactivate"
-  },
-  "activateHelp": {
+  "toggleHelp": {
     "message": "Toggle overlay for the current website."
   },
   "global": {
@@ -68,14 +65,14 @@
   "advanced": {
     "message": "Advanced"
   },
-  "extensionDetails": {
-    "message": "Manage extension settings"
+  "extensionInfo": {
+    "message": "Details"
   },
   "extensionShortcuts": {
     "message": "Keyboard shortcuts"
   },
   "resetUrl": {
-    "message": "Reset current website"
+    "message": "Reset website"
   },
   "resetUrlConfirm": {
     "message": "Are you sure you want to reset the settings for this website?"
