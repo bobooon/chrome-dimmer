@@ -23,7 +23,7 @@ async function updateTabs(tabId?: number) {
 
 async function getSettings(tabId?: number) {
   const settings = getDefaultSettings()
-  settings.global = (await chrome.storage.local.get(['_global']))._global || settings.global
+  settings.global = (await chrome.storage.local.get(['_global']))._global as Settings['global'] || settings.global
 
   try {
     const tab = tabId
@@ -34,7 +34,7 @@ async function getSettings(tabId?: number) {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => true })
       const { hostname } = new URL(tab.url)
       settings.url.hostname = hostname
-      settings.url = (await chrome.storage.local.get([hostname]))[hostname] || settings.url
+      settings.url = (await chrome.storage.local.get([hostname]))[hostname] as Settings['url'] || settings.url
     }
   }
   catch {}
